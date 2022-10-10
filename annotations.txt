@@ -1,13 +1,54 @@
+regex vscode -> gmi
+
 \W => nao palavras
 \w => paralavras
+\d => números
 
 ^(\d{3}).(\d{3}).(\d{3})-(\d{2}) -> pega os numeros (padrao mais iniciante)
 
+--- Trocando os nomes de posição
+
+search: ^(\w+),\s(\w+)
+Wendel, Erick
+replace: $2 $1
+Erick Wendel
+
+--- Tirando os pontos e traços do CPF
+
+search: [.-]
 123.123.123-14
-321.321.321-32
-200.300.500-19
+replace: vazio
+12312312314
 
-procurar por: [.-]
-replace por: vazio
+--- Transformando uma planilha ou arquivo CSV em formato JSON
 
----
+search: ^(\w+),\s(\w+)
+Wendel, Erick
+replace: [{"firstName": "$2", "lastName": "$1"},
+result: [{"firstName": "Erick", "lastName": "Wendel"},
+
+--- Converter uma query SQL para MongoDB
+Query SQL
+SELECT Id, Nome, Endereco FROM Users WHERE ID = 1
+SELECT Id, Nome, Endereco, Codigo FROM Users WHERE Descricao = 'SP'
+
+Query NoSQL
+db.users.find({Id: 1 }).project({ Id: true, Nome: true, Endereco: true })
+
+Explicação dos grupos:
+1 - Projeção (Campos)
+2 - Tabela / DB
+3 - Campos da clausula WHERE
+4 - Valores da clausula WHERE 
+
+Primeira parte
+search: select\s(.*?)\sfrom\s(.*?)\swhere\s(.*?)\W{2}\s(.*)
+SELECT Id, Nome, Endereco FROM Users WHERE ID = 1
+replace: db.$2.find({$3 : $4}).project({$1})
+db.Users.find({ID : 1}).project({Id, Nome, Endereco})
+
+Segunda parte
+search: (\w+)(?=,)
+db.Users.find({ID : 1}).project({Id, Nome, Endereco})
+replace: $1: true
+db.Users.find({ID : 1}).project({Id: true, Nome: true, Endereco: true,})
